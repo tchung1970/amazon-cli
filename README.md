@@ -50,15 +50,17 @@ Every search shows the **top 10** results that are:
 - **2.5" SATA type** — off-type items (M.2, NVMe, external) are filtered out
 - **Sorted by rating**, high to low (override with `--price` or `--delivery`)
 
-## Setup
+## Installation
 
 Requires Python 3. Optionally install `curl_cffi` for browser impersonation
 (reduces bot-detection blocks); the tool falls back to the standard library if
 it's absent, so it always runs.
 
 ```bash
-pip install curl_cffi        # optional but recommended
-ln -s "$PWD/amazon-cli.py" ~/bin/amazon-cli   # so you can run it as `amazon-cli`
+git clone https://github.com/tchung1970/amazon-cli.git
+cd amazon-cli
+pip install curl_cffi                          # optional but recommended
+ln -sf "$PWD/amazon-cli.py" ~/bin/amazon-cli   # run it as `amazon-cli` (assumes ~/bin is on PATH)
 ```
 
 Optional environment variables:
