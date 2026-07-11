@@ -17,7 +17,6 @@ amazon-cli "4TB 2.5 SATA Internal SSD" --rating    # sorted by rating (high to l
 amazon-cli "4TB 2.5 SATA Internal SSD" --price     # sorted by price (low to high)
 amazon-cli "4TB 2.5 SATA Internal SSD" --delivery  # sorted by delivery (fastest first)
 amazon-cli "4TB 2.5 SATA Internal SSD" -n 20       # more results (default 10)
-amazon-cli B08QBL36GF                              # look up one product by ASIN or URL
 amazon-cli                                         # show examples
 amazon-cli -h                                      # all options
 ```
