@@ -56,9 +56,19 @@ Requires Python 3. Optionally install `curl_cffi` for browser impersonation
 (reduces bot-detection blocks); the tool falls back to the standard library if
 it's absent, so it always runs.
 
-1. Clone and enter the repo: `git clone https://github.com/tchung1970/amazon-cli.git` then `cd amazon-cli`
-2. Optional but recommended — install browser impersonation: `pip install curl_cffi`
-3. Symlink it onto your `PATH` to run it as `amazon-cli`: `ln -sf "$PWD/amazon-cli.py" ~/bin/amazon-cli` (assumes `~/bin` is on your `PATH`)
+1. Clone and enter the repo:
+   ```bash
+   git clone https://github.com/tchung1970/amazon-cli.git
+   cd amazon-cli
+   ```
+2. Optional but recommended — install browser impersonation:
+   ```bash
+   pip install curl_cffi
+   ```
+3. Symlink it onto your `PATH` to run it as `amazon-cli` (assumes `~/bin` is on your `PATH`):
+   ```bash
+   ln -sf "$PWD/amazon-cli.py" ~/bin/amazon-cli
+   ```
 
 Optional environment variables:
 - `AMAZON_TLD=co.uk` — use a different marketplace (default `com`); e.g. `AMAZON_TLD=co.uk amazon-cli "ssd"`
