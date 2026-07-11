@@ -70,9 +70,6 @@ it's absent, so it always runs.
    ln -sf "$PWD/amazon-cli.py" ~/bin/amazon-cli
    ```
 
-Optional environment variables:
-- `AMAZON_TLD=co.uk` — use a different marketplace (default `com`); e.g. `AMAZON_TLD=co.uk amazon-cli "ssd"`
-
 ## How it works
 
 1. **Fetch** the search page (via `curl_cffi` Chrome impersonation when available,
