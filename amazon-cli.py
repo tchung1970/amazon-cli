@@ -157,16 +157,16 @@ def _soft_fetch(url: str):
 
 def _model(text: str):
     """Extract the manufacturer model number from a product page's details
-    table (labelled 'Model Number' or 'Item model number'). Only real SKUs are
-    returned — a single token with letters and digits; generic values like
-    'Platinum 4TB' (multi-word) are rejected."""
+    table (labelled 'Model Number' or 'Item model number'). Requires a value
+    with both letters and digits, so pure words like 'SSD' are rejected;
+    multi-word values like 'Platinum 4TB' are kept, since some brands (e.g.
+    INLAND) have no cleaner SKU."""
     m = re.search(r'(?:Item model number|Model Number)\s*</th>\s*'
                   r'<td[^>]*>\s*([^<]{1,40}?)\s*</td>', text, re.I)
     if not m:
         return None
     val = _clean(m.group(1))
-    if " " in val or not (any(ch.isdigit() for ch in val)
-                          and any(ch.isalpha() for ch in val)):
+    if not (any(ch.isdigit() for ch in val) and any(ch.isalpha() for ch in val)):
         return None
     return val
 
