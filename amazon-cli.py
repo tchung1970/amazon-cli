@@ -294,6 +294,44 @@ def _price_value(s: str):
     return float(m.group(0).replace(",", "")) if m else None
 
 
+def _buybox_price(page: str, asin: str | None = None):
+    """Extract the authoritative buy-box price from a product page.
+
+    A product page carries dozens of `a-offscreen` price spans — variant
+    prices (1TB/2TB/4TB), list/strikethrough prices, and related-item
+    carousels — and `priceToPay` itself appears in those variant blocks too, so
+    grabbing the first match yields a different item's price. Anchor to the
+    buy-box container for THIS asin and read its 'price to pay'; return None
+    rather than guess, so a miss shows 'n/a' instead of a wrong number."""
+    anchor = -1
+    for name in ("corePriceDisplay_desktop_feature_div",
+                 "corePrice_desktop_feature_div",
+                 "corePrice_feature_div"):
+        anchor = page.find(name)
+        if anchor != -1:
+            break
+    if anchor == -1:
+        return None
+    window = page[anchor:anchor + 4000]
+    # If the container names an ASIN, it must be the one we asked for.
+    dm = re.search(r'data-csa-c-asin="([A-Z0-9]{10})"', window)
+    if asin and dm and dm.group(1) != asin:
+        return None
+    # Modern template: the semantic "price to pay" accessibility label,
+    # e.g. "$1,189.40 with 43 percent savings" — take the leading price token.
+    m = re.search(r'apex-pricetopay-accessibility-label[^>]*>\s*'
+                  r'([£$€]\s?[\d,]+\.?\d*)', window)
+    if m:
+        return _clean(m.group(1))
+    # Older template: the price-to-pay span renders as whole + fraction.
+    pm = re.search(r'priceToPay.*?a-price-symbol">([^<]*)<.*?'
+                   r'a-price-whole">([\d,]+).*?a-price-fraction">(\d+)',
+                   window, re.S)
+    if pm:
+        return f"{pm.group(1)}{pm.group(2)}.{pm.group(3)}"
+    return None
+
+
 def _count(block: str):
     """Extract a product's review count from a search-result block. The count
     lives in the rating span (data-rt=...), shown as '(2.3k)', '54', etc.
@@ -541,11 +579,6 @@ def cmd_price(args: argparse.Namespace) -> None:
     page = fetch(url)
 
     title_m = re.search(r'id="productTitle"[^>]*>([^<]+)<', page)
-    price_m = (re.search(r'"priceToPay".*?<span class="a-offscreen">([^<]+)</span>',
-                         page, re.S)
-               or re.search(r'id="corePrice[^"]*".*?<span class="a-offscreen">([^<]+)</span>',
-                            page, re.S)
-               or re.search(r'<span class="a-offscreen">([^<]+)</span>', page))
     rating_m = re.search(r'([0-9.]+) out of 5 stars', page)
     avail_m = re.search(r'id="availability".*?<span[^>]*>([^<]+)</span>', page, re.S)
     asin_m = re.search(r'"asin"\s*:\s*"([A-Z0-9]{10})"', page) or \
@@ -554,10 +587,11 @@ def cmd_price(args: argparse.Namespace) -> None:
     if not title_m:
         sys.exit("Could not find product (bad ASIN/URL, or a bot check hit).")
 
+    asin = asin_m.group(1) if asin_m else None
     result = {
-        "asin": asin_m.group(1) if asin_m else None,
+        "asin": asin,
         "title": _clean(title_m.group(1)),
-        "price": _clean(price_m.group(1)) if price_m else None,
+        "price": _buybox_price(page, asin),
         "rating": float(rating_m.group(1)) if rating_m else None,
         "availability": _clean(avail_m.group(1)) if avail_m else None,
         "delivery": _delivery(page),
@@ -587,6 +621,9 @@ EXAMPLES = f"""\
 
 All examples — Prime, top 10 brands, 1000+ reviews.
 Run {c('amazon-cli -h', '90')} for all options.
+
+{c('Note:', '90')} runs from your IP, so Amazon may rate-limit (bot check). If it does,
+wait a few minutes — repeat searches within 10 min are cached (free).
 """
 
 
